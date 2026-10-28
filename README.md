@@ -17,7 +17,7 @@ Two independent detection channels mark files; one overlay renders them:
 |---|---|---|
 | Process watcher: polls process launches (~400 ms), reads the command line from the PEB, marks every media file passed to a known player | ~1 s | works for MPC-BE/HC, mpv, VLC, PotPlayer, Kodi, ffplay, … (configurable) |
 | Windows jump-list scan (`AutomaticDestinations`) every 5 s | minutes | fallback for players not in the list; also seeds your watch history on first run |
-| Explorer context menu — *"Отметить просмотренным"* (toggle) | instant | manual override for any file |
+| Explorer context menu — *"Mark as watched"* (toggle) | instant | manual override for any file |
 
 Marks are stored in `%LOCALAPPDATA%\seenmark\state.json` (path → watched-at time).
 The shell extension (`seenmark.dll`, `IShellIconOverlayIdentifier`) is registered under

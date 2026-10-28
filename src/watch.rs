@@ -513,7 +513,7 @@ pub fn autostart(on: bool) -> Result<(), Box<dyn std::error::Error>> {
     if on {
         let exe = store::bin_dir().join("seen.exe");
         if !exe.exists() {
-            return Err("seen.exe не установлен (seen install)".into());
+            return Err("seen.exe is not installed (run: seen install)".into());
         }
         seenmark::reg::set_sz(
             windows::Win32::System::Registry::HKEY_CURRENT_USER,
@@ -521,15 +521,15 @@ pub fn autostart(on: bool) -> Result<(), Box<dyn std::error::Error>> {
             Some(RUN_VALUE),
             &format!("\"{}\" watch", exe.display()),
         )
-        .map_err(|e| format!("реестр: {e:?}"))?;
-        println!("автозапуск включён: {}", format!("\"{}\" watch", exe.display()));
+        .map_err(|e| format!("registry: {e:?}"))?;
+        println!("autostart enabled: {}", format!("\"{}\" watch", exe.display()));
     } else {
         let _ = seenmark::reg::delete_value(
             windows::Win32::System::Registry::HKEY_CURRENT_USER,
             RUN_KEY,
             RUN_VALUE,
         );
-        println!("автозапуск выключен");
+        println!("autostart disabled");
     }
     Ok(())
 }
@@ -565,6 +565,6 @@ pub fn stop() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-    println!("остановлено экземпляров: {killed}");
+    println!("stopped instances: {killed}");
     Ok(())
 }

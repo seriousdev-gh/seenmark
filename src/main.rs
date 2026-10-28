@@ -46,7 +46,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "mark" | "unmark" | "toggle" => {
             let path = args.get(1).ok_or("missing <path>")?;
             let key = canon(path);
-            let mut map = store::try_load().map_err(|e| format!("стор повреждён: {e}"))?;
+            let mut map = store::try_load().map_err(|e| format!("store is corrupt: {e}"))?;
             let cur = map.get(&key).copied().unwrap_or(0);
             let marked = match cmd {
                 "mark" => true,
@@ -60,14 +60,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 // the scan treats any tombstone as final)
                 map.insert(key.clone(), -(store::now_secs() as i64));
             } else {
-                println!("уже без отметки: {key}");
+                println!("already unmarked: {key}");
                 return Ok(());
             }
             store::save(&map)?;
             notify_item(&key);
             println!(
                 "{}: {}",
-                if marked { "просмотрено" } else { "снята отметка" },
+                if marked { "marked as watched" } else { "unmarked" },
                 key
             );
         }
@@ -80,7 +80,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .collect();
             items.sort();
             if items.is_empty() {
-                println!("пусто");
+                println!("no marks");
             }
             for (_, k) in items {
                 println!("{k}");
@@ -103,7 +103,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
         "icon" => {
             fs::write(store::icon_path(), ico::seen_ico_bytes())?;
-            println!("иконка обновлена: {}", store::icon_path().display());
+            println!("icon updated: {}", store::icon_path().display());
             unsafe { SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None) };
         }
         "watch" => watch::watch(args.iter().any(|a| a == "--verbose"))?,
@@ -115,7 +115,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                     println!("image: {img}");
                     println!("cmd  : {cmd}");
                 }
-                None => println!("не удалось прочитать PEB (pid {pid})"),
+                None => println!("failed to read PEB (pid {pid})"),
             }
         },
         "autostart" => {
@@ -204,7 +204,7 @@ fn install(machine: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     // Explorer context menu entry (toggle)
     let menu = format!("{classes}\\*\\shell\\{MENU_KEY}");
-    reg::set_sz(root, &menu, None, "Отметить просмотренным").map_err(win_err)?;
+    reg::set_sz(root, &menu, None, "Mark as watched").map_err(win_err)?;
     reg::set_sz(root, &menu, Some("Icon"), icon.to_str().ok_or("bad icon path")?)
         .map_err(win_err)?;
     reg::set_sz(
@@ -217,9 +217,9 @@ fn install(machine: bool) -> Result<(), Box<dyn std::error::Error>> {
 
     unsafe { SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None) };
 
-    println!("установлено ({}).", if machine { "HKLM" } else { "HKCU" });
-    println!("данные: {}", store::data_dir().display());
-    println!("чтобы оверлей появился, перезапустите Explorer:");
+    println!("installed ({}).", if machine { "HKLM" } else { "HKCU" });
+    println!("data: {}", store::data_dir().display());
+    println!("restart Explorer to make the overlay appear:");
     println!("  taskkill /f /im explorer.exe & start explorer.exe");
     Ok(())
 }
@@ -231,11 +231,11 @@ fn uninstall(machine: bool) {
     let _ = reg::delete_tree(root, &format!("{overlay_root}\\{SLOT_KEY}"));
     let _ = reg::delete_tree(root, &format!("{classes}\\*\\shell\\{MENU_KEY}"));
     unsafe { SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, None, None) };
-    println!("снято ({}). перезапустите Explorer.", if machine { "HKLM" } else { "HKCU" });
+    println!("uninstalled ({}). restart Explorer.", if machine { "HKLM" } else { "HKCU" });
 }
 
 fn win_err(e: Error) -> Box<dyn std::error::Error> {
-    format!("реестр: {e:?}").into()
+    format!("registry: {e:?}").into()
 }
 
 /// Ask Explorer to redraw this one item right now.
