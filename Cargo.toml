@@ -1,6 +1,6 @@
 [package]
 name = "seenmark"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 description = "Windows Explorer icon overlay + watcher that marks media files you have already watched"
 license = "MIT"

@@ -23,6 +23,13 @@ Marks are stored in `%LOCALAPPDATA%\seenmark\state.json` (path → watched-at ti
 The shell extension (`seenmark.dll`, `IShellIconOverlayIdentifier`) is registered under
 **HKCU** — no administrator rights required.
 
+## Download
+
+Prebuilt binaries are published on the [Releases](https://github.com/seriousdev-gh/seenmark/releases)
+page (`SeenMark-vX.Y.Z.zip`: `seen.exe` + `seenmark.dll` + README/LICENSE). Unpack to
+any folder and run `seen.exe install` from that folder. Every `v*` tag is built and
+released automatically by GitHub Actions (`windows-latest`).
+
 ## Build from source
 
 Prerequisites: Windows 10/11 x64, [Rust toolchain](https://rustup.rs) (MSVC), Git.
