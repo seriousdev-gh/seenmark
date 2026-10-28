@@ -1,0 +1,36 @@
+[package]
+name = "seenmark"
+version = "0.1.0"
+edition = "2021"
+description = "Windows Explorer icon overlay + watcher that marks media files you have already watched"
+license = "MIT"
+repository = "https://github.com/seriousdev-gh/seenmark"
+
+[lib]
+name = "seenmark"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "seen"
+path = "src/main.rs"
+
+[dependencies]
+windows = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_LibraryLoader",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_Common",
+] }
+windows-core = "0.61"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+lto = true
+strip = true
