@@ -44,7 +44,11 @@ fn is_watched(path: &str) -> bool {
             let t = md.modified().ok();
             if guard.0 != t {
                 if let Ok(map) = store::try_load() {
-                    guard.1 = map.into_keys().collect();
+                    guard.1 = map
+                        .into_iter()
+                        .filter(|(_k, v)| *v > 0)
+                        .map(|(k, _)| k)
+                        .collect();
                     guard.0 = t;
                 }
                 // parse error: keep the last good cache, retry on next call

@@ -29,8 +29,12 @@ pub fn bin_dir() -> PathBuf {
     data_dir().join("bin")
 }
 
-/// path (lowercased, UNC-prefix-stripped) -> unix seconds of the mark
-pub type MarkMap = HashMap<String, u64>;
+/// path (lowercased, UNC-prefix-stripped) -> unix seconds.
+/// value > 0: watched.
+/// value < 0: tombstone (abs = unix time of the deliberate unmark).
+/// The jump-list scan never re-marks a tombstone; only an explicit
+/// CLI/menu mark or a player launch caught on the argv channel revives it.
+pub type MarkMap = HashMap<String, i64>;
 
 pub fn normalize_str(path: &str) -> String {
     let p = path

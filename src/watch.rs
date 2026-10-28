@@ -284,10 +284,12 @@ fn mark(path: &str) {
             return;
         }
     };
-    if map.contains_key(&key) {
+    if map.get(&key).copied().unwrap_or(0) > 0 {
         return; // already watched — no rewrite, no notify spam
     }
-    map.insert(key.clone(), store::now_secs());
+    // fresh mark, or the user opened the file again after an unmark:
+    // an explicit player launch always wins over a tombstone
+    map.insert(key.clone(), store::now_secs() as i64);
     let _ = store::save(&map);
     crate::notify_item(&key);
 }
@@ -493,8 +495,10 @@ fn scan_autodest(seen: &mut std::collections::HashMap<PathBuf, u64>, cfg: &Confi
             continue; // stale jump-list entry for a deleted/renamed file
         }
         let key = crate::canon(&path);
+        // jump-list channel never (re-)marks paths the user unmarked:
+        // any existing entry, tombstone included, is authoritative
         if !map.contains_key(&key) {
-            map.insert(key.clone(), mtime);
+            map.insert(key.clone(), mtime as i64);
             crate::notify_item(&key);
             changed = true;
         }

@@ -93,6 +93,11 @@ rmdir /s /q "%LOCALAPPDATA%\seenmark"
   or copied after watching keep their marks at the old location.
 - Files opened inside a player's own "Open" dialog (not via shell launch) are only
   covered by the jump-list channel.
+- A manual unmark is final: the jump-list channel never re-adds that file. A
+  re-open revives the badge only when the player is launched with the file on its
+  command line (player wasn't running yet). A "hot" open via DDE (player already
+  running, e.g. MPC-BE) spawns no process and is invisible system-wide — re-mark
+  via the context menu or `seen mark`.
 
 ## Privacy
 

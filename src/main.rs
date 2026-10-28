@@ -47,15 +47,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let path = args.get(1).ok_or("missing <path>")?;
             let key = canon(path);
             let mut map = store::try_load().map_err(|e| format!("стор повреждён: {e}"))?;
+            let cur = map.get(&key).copied().unwrap_or(0);
             let marked = match cmd {
                 "mark" => true,
                 "unmark" => false,
-                _ => !map.contains_key(&key),
+                _ => cur <= 0,
             };
             if marked {
-                map.insert(key.clone(), store::now_secs());
+                map.insert(key.clone(), store::now_secs() as i64);
+            } else if cur > 0 {
+                // tombstone = minus the unmark time (diagnostic only;
+                // the scan treats any tombstone as final)
+                map.insert(key.clone(), -(store::now_secs() as i64));
             } else {
-                map.remove(&key);
+                println!("уже без отметки: {key}");
+                return Ok(());
             }
             store::save(&map)?;
             notify_item(&key);
@@ -67,8 +73,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
         "list" => {
             let map = store::load();
-            let mut items: Vec<(u64, &str)> =
-                map.iter().map(|(k, v)| (*v, k.as_str())).collect();
+            let mut items: Vec<(i64, &str)> = map
+                .iter()
+                .filter(|(_k, v)| **v > 0)
+                .map(|(k, v)| (*v, k.as_str()))
+                .collect();
             items.sort();
             if items.is_empty() {
                 println!("пусто");
